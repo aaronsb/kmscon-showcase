@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Checks fork/showcase/bad-apple.sh without a video, a terminal or any of
+"""Checks bad-apple.sh without a video, a terminal or any of
 the media tools: its act and effect tables (--list), its plan (--dry-run),
 its refusals, that every act listed has its function, and the pure helpers
 the acts draw with (screen.py, frames.py, effects.py and act 5's sizing in
@@ -56,7 +56,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", required=True)
     root = os.path.abspath(ap.parse_args().root)
-    script = os.path.join(root, "fork/showcase/bad-apple.sh")
+    script = os.path.join(root, "bad-apple.sh")
 
     with tempfile.TemporaryDirectory() as tmp:
         env = {k: v for k, v in os.environ.items() if k != "BAD_APPLE" and not k.startswith("ACT")}
@@ -263,7 +263,7 @@ def main():
 
     # The helpers, imported without leaving bytecode in the tree.
     sys.dont_write_bytecode = True
-    sys.path.insert(0, os.path.join(root, "fork/showcase"))
+    sys.path.insert(0, root)
     import effects  # noqa: E402
     import frames  # noqa: E402
     import fx  # noqa: E402,F401  (the command line imports every module)
@@ -323,11 +323,11 @@ SINKLESS_LIST = """List of detected audio devices:
 
 
 def picker_checks(root):
-    """fork/demo/pick-audio.sh, the showcase's output picker, with stand-ins
+    """pick-audio.sh, the showcase's output picker, with stand-ins
     for mpv (a PulseAudio desktop's list), pgrep (no PipeWire running, or
     $PW_PID), getent and, when ID_G is set, id (user tester, uid 1000, the
     groups in ID_G), and a sound card directory of its own."""
-    picker = os.path.join(root, "fork/demo/pick-audio.sh")
+    picker = os.path.join(root, "pick-audio.sh")
     with tempfile.TemporaryDirectory() as tmp:
         stubs = os.path.join(tmp, "bin")
         os.mkdir(stubs)
@@ -376,7 +376,7 @@ def picker_checks(root):
         check("AUDIO_DEVICE answers without a question", p.returncode == 0 and p.stdout == "pulse/x\n",
               p.stdout + p.stderr)
         # A run whose acts play no sound asks nothing; act 2 has a music cue.
-        script = os.path.join(root, "fork/showcase/bad-apple.sh")
+        script = os.path.join(root, "bad-apple.sh")
         for first, last, banner, wait_key, want, why in (
                 ("7", "7", "1", "1", "audio=0 \n", "act 7 --banner-only asks for no output"),
                 ("2", "2", "", "0", "audio=1 --audio-device=auto\n", "act 2 alone plays its cue")):
@@ -389,7 +389,7 @@ def picker_checks(root):
             check(why, p.returncode == 0 and p.stdout == want and "Where should" not in p.stderr,
                   p.stdout + p.stderr)
         # Every cue the show starts is rendered beside its Strudel source.
-        music = os.path.join(root, "fork/showcase/music")
+        music = os.path.join(root, "music")
         with open(script) as f:
             started = set(re.findall(r"^\s+cue_start ([\w-]+)", f.read(), re.M))
         check("every cue the show starts has its .ogg and its Strudel source",
@@ -801,7 +801,7 @@ def kitty_checks(root):
             if pid == 0:
                 os.environ["PATH"] = stubs + ":" + os.environ["PATH"]
                 os.environ.update(env)
-                os.execvp("python3", ["python3", "-B", os.path.join(root, "fork/showcase/fx.py"), "kitty",
+                os.execvp("python3", ["python3", "-B", os.path.join(root, "fx.py"), "kitty",
                                       "--video=clip.mp4", *args])
             if keys:
                 time.sleep(0.3)
@@ -923,7 +923,7 @@ def kitty_checks(root):
             if pid == 0:
                 os.environ["PATH"] = stubs + ":" + os.environ["PATH"]
                 os.environ.update(COLUMNS="140", LINES="40", **env)
-                os.execvp("python3", ["python3", "-B", os.path.join(root, "fork/showcase/fx.py"), "shades", "--kitty",
+                os.execvp("python3", ["python3", "-B", os.path.join(root, "fx.py"), "shades", "--kitty",
                                       "--cell-w", "10", "--cell-h", "20", *args])
             got = b""
             start = time.monotonic()
@@ -983,7 +983,7 @@ def kitty_checks(root):
     # the player must read as a number anyway. Once with the variable set to
     # a comma (bash drops its special meaning when it is unset), and once
     # under a comma-decimal locale where one is installed.
-    script = os.path.join(root, "fork/showcase/bad-apple.sh")
+    script = os.path.join(root, "bad-apple.sh")
     code = 'source "$1"; audio=1; BAD_APPLE=x; mpv() { :; }; {} audio_start 46 60; echo "$audio_started"'
     p = subprocess.run(["bash", "-c", code.replace("{}", "unset EPOCHREALTIME; EPOCHREALTIME=1792895934,861204;"),
                         "sh", script], capture_output=True, text=True, timeout=30)

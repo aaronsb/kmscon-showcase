@@ -1,7 +1,7 @@
 #!/bin/bash
 # The Bad Apple!! showcase (#75): a demoscene homage that plays Bad Apple!!
 # through each rendering layer a terminal has, each act running into the limit
-# of the last. See fork/showcase/README.md.
+# of the last. See README.md.
 #
 #   BAD_APPLE=/path/to/video bad-apple.sh [--act N | --from N] [--audio] [--no-wait]
 #   bad-apple.sh --list | --dry-run [--act N | --from N] | --prepare | --fx NAME | --act 7 --banner-only
@@ -25,7 +25,7 @@ set -euo pipefail
 # Braille pass, act 3, act 5 (its last ACT5_GLITCH seconds glitched), then
 # act 7 until the end card's cue (delete that line to play act 7 to the end
 # of the video). Acts 2, 4 and 6 play between them for the lengths set
-# below, to music cues of their own (fork/showcase/music), and the
+# below, to music cues of their own (music/), and the
 # soundtrack picks up again at the next cue, so the times are the video's,
 # not the show's. Act 7's three moves are cues too: its one
 # copy slides left (act7-slide), a second copy slides out from behind it
@@ -120,7 +120,7 @@ cue() {
 : "${BANNER_ROWS:=12}"           #   the scroller's rows along the bottom
 : "${BANNER_FPS:=40}"            #   frames a second; it moves one column a frame
 : "${BANNER_SECONDS:=0}"         #   --banner-only runs this long (0: until q)
-: "${KITTY_TRANSPORT:=png}"      #   how each frame travels: raw, zlib, png or shm (fork/showcase/kitty.py)
+: "${KITTY_TRANSPORT:=png}"      #   how each frame travels: raw, zlib, png or shm (kitty.py)
 : "${KITTY_WIDTH:=0}"            #   frames are decoded this many pixels wide (0: a copy's own size, at most 2160 tall); a number limits the player's work on a slow machine
 : "${ACT7_REPORT:=}"             #   a file to append the player's frame rate to
 : "${PLACEHOLDER_SECONDS:=6}"    # a placeholder (act 5 or 7) stays this long
@@ -171,7 +171,7 @@ ACT_WHAT=(""
 	"\"wait a minute... don't we have ... LIBSIXEL?\" typed over the frozen frame"
 	"sixel (DA1 attribute 4): mpv --vo=sixel plays it ${ACT5_SIZE} of the screen's height, sized from the cell size the terminal reports (XTWINOPS 16), it glitches to one channel and tears, and its last frame stays; else a placeholder"
 	"a fire wipe uncovering a stream of CJK text that then fills the screen and blows away, \"hold on, we also have kitty. one sec, feeding the cats\", a crowd of colour cats, then big cat faces in a row in kitty graphics (emoji without), pixel sunglasses dropping onto each, sliding off as act 7 fades in"
-	"kitty graphics (a=q): each frame transmitted once and placed up to three times (fork/showcase/kitty.py), one copy in the middle that slides left, then a second and a third sliding out from behind it, until the end card's cue, above a scroller of the fork's features over copper bars; else a placeholder above the scroller; --banner-only: the scroller alone")
+	"kitty graphics (a=q): each frame transmitted once and placed up to three times (kitty.py), one copy in the middle that slides left, then a second and a third sliding out from behind it, until the end card's cue, above a scroller of the fork's features over copper bars; else a placeholder above the scroller; --banner-only: the scroller alone")
 ACT_KMSCON=(""
 	"plays"
 	"plays"
@@ -568,7 +568,7 @@ audio_stop() {
 }
 
 # The output the soundtrack plays through, asked for before the show takes
-# the screen (--audio) by fork/demo/pick-audio.sh, which AUDIO_DEVICE
+# the screen (--audio) by pick-audio.sh, which AUDIO_DEVICE
 # answers in advance: mpv's name for it, or none for no sound. With
 # --no-wait nothing is asked. Nothing is asked either when no act in the run
 # plays sound: act 7 with --banner-only alone.
@@ -583,7 +583,7 @@ pick_audio() {
 		return
 	fi
 	[ "$wait_key" = 1 ] || no_wait=(--no-wait)
-	dev=$(bash "$here/../demo/pick-audio.sh" "${no_wait[@]}") || exit $?
+	dev=$(bash "$here/pick-audio.sh" "${no_wait[@]}") || exit $?
 	if [ "$dev" = none ]; then
 		audio=0
 	else
@@ -887,7 +887,7 @@ act_6() {
 	clear_screen
 }
 
-# The interlude after the cats (fork/showcase/shades.py): big vector cat
+# The interlude after the cats (shades.py): big vector cat
 # faces in a row, pixel sunglasses dropping onto them one a beat, then the
 # row sliding off as act 7 fades in. In kitty graphics where the terminal
 # has them and rsvg-convert is here to render the faces, else in emoji.

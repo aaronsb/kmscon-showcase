@@ -9,11 +9,11 @@ resized, and report frames per second and bytes per frame.
 """
 
 import collections
-import importlib.util
 import math
 import os
 import random
 
+from ideographs import ideographs
 from letters import TextMask
 from screen import (BraillePainter, Dots, Painter, Stats, clear, cup, frames, geom,
                     gradient, hsv, out, resized, scale, ESC)
@@ -97,20 +97,16 @@ class Shadebobs:
 class CJKStream:
     """Lines of CJK ideographs scrolled up a region of the screen, the
     terminal doing the scrolling: a stress of the parser, the glyph cache
-    and the scroll. The ideographs are the glyph kit's (fork/demo/
-    glyph-text.py), drawn by Zipf's law from a seeded pool, so every run
-    sends the same text; each line opens with its number. blow() then
-    blows the lines on the screen away."""
+    and the scroll. The ideographs are the glyph kit's (ideographs.py, a
+    copy of kmscon's fork/demo/glyph-text.py's), drawn by Zipf's law from
+    a seeded pool, so every run sends the same text; each line opens with
+    its number. blow() then blows the lines on the screen away."""
 
     PER_FRAME = 3  # lines a frame: 120 a second at 40 fps
 
     def __init__(self, cols, rows):
-        path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "demo", "glyph-text.py")
-        spec = importlib.util.spec_from_file_location("glyph_text", path)
-        glyphs = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(glyphs)
         rng = random.Random(2026)
-        chars, weights = glyphs.ideographs(rng)
+        chars, weights = ideographs(rng)
         self.pool = "".join(rng.choices(chars, weights, k=20000))
         self.cols, self.rows = cols, rows
         self.width = max(1, (cols - 7) // 2)  # ideographs a line, after "nnnnn "

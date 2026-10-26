@@ -5,7 +5,7 @@
 // back half-time beat; a cool major seventh once all six are on; and on
 // bar 3, as the row slides off to the left, a gust panning right to left
 // over a B flat chord, the dominant of the video's E flat minor, which
-// comes back fading in. Times match fork/showcase/shades.py.
+// comes back fading in. Times match shades.py.
 // @bpm 138
 // @bars 4
 // @tail .6

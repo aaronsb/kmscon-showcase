@@ -3,7 +3,7 @@ faces in kitty graphics, pixel sunglasses dropping onto them one a beat
 from left to right, then the row sliding off the left edge.
 
 The faces are Noto Emoji's vector cats and the sunglasses a pixel-art SVG
-(fork/showcase/cats/), rendered by rsvg-convert at the size the screen
+(cats/), rendered by rsvg-convert at the size the screen
 asks for, a quarter of its height at most, into the cache, where the next
 run finds them. Each is placed at its own pixel size, so nothing is scaled
 by the terminal; the sunglasses sit above the faces (z) and fall by being
