@@ -1,6 +1,33 @@
-# Bad Apple!! showcase
+# Bad Apple!! on kmscon
 
-A demoscene homage that plays *Bad Apple!!* through each rendering layer a terminal has, each act running into the limit of the last: crude ASCII, Braille dots, block letters, aalib, sixel, colour emoji, kitty graphics (#75). It is the fork's announcement demo, filmed on the operator's display through the kmscon dev build.
+In the operator's words: "the bad apple demo is just something we have that uniquely asserts the capabilities of our kmscon fork". This repository holds that demo for [aaronsb/kmscon](https://github.com/aaronsb/kmscon), a fork of kmscon, the terminal that runs on a Linux VT with no display server. The show is a demonstration of the fork, not one of its tests. It is built to show what the fork does that other terminals don't: sixel and kitty graphics on a bare VT, resize requests honoured (act 3 asks for a real 80x25 and gets it), and sound in time with the picture on a VT.
+
+It plays best on the fork. In other terminals it falls back and says so: kitty, for one, shows a placeholder in act 5, which needs sixel, and plays act 3 in a frame, since it ignores the resize ([what each terminal plays](#preview-in-kitty-foot-or-wezterm)).
+
+Issue numbers (aaronsb/kmscon#75) and ADRs (ADR-103) cited below are kmscon's; its decision records are in [docs/architecture](https://github.com/aaronsb/kmscon/tree/main/docs/architecture). The show moved here from kmscon's `fork/showcase/` with its history (aaronsb/kmscon#239).
+
+## Licences
+
+- The code, and everything else not named below: MIT ([LICENSE](LICENSE)).
+- The original music, the cues in `music/` (their Strudel sources and `.ogg` renderings): CC BY 4.0 ([music/LICENSE](music/LICENSE)).
+- The drums mixed into the `.ogg` files: MckAudio's TR-8 recordings, CC0 1.0, fetched from a pinned commit ([Music](#music)).
+- The six cat faces in `cats/`: Noto Emoji, Apache License 2.0 ([cats/LICENSE-noto-emoji](cats/LICENSE-noto-emoji)).
+
+The rule for anything added: every third-party asset is under Creative Commons or another known licence, and nothing NC, ND or unlicensed. The video is never shipped (below).
+
+## Run it on a kmscon VT
+
+Log in on a VT that runs kmscon, the fork's build: from a kmscon checkout, `make vt-login` builds and stages it and puts its login prompt on a free VT ([kmscon's docs/fork/demo.md](https://github.com/aaronsb/kmscon/blob/main/docs/fork/demo.md)). Once logged in, from this repository:
+
+```sh
+BAD_APPLE=/path/to/your/copy ./bad-apple.sh --audio
+```
+
+It asks where the sound plays ([Sound](#sound)), then waits for a key; q ends it. A login session gets the sound cards from logind while its VT is on screen, so no `audio` group is needed. `--from N` starts at act N; `BAD_APPLE=... ./bad-apple.sh --prepare` renders the frame caches beforehand, so the show starts at once ([Options](#options)). kmscon's own options, the font and the mode, go to `make vt-login`; the operator's display runs `make vt-login DEMO_ARGS='--font-name="Monoid Nerd Font Mono" --font-size=30 --mode=7680x2160 --no-use-original-mode'`.
+
+## The show
+
+A demoscene homage that plays *Bad Apple!!* through each rendering layer a terminal has, each act running into the limit of the last: crude ASCII, Braille dots, block letters, aalib, sixel, colour emoji, kitty graphics (aaronsb/kmscon#75). It is the fork's announcement demo, filmed on the operator's display through the kmscon dev build.
 
 The video is never downloaded or committed. *Bad Apple!!* is a fan work (original by ZUN, arrangement by Alstroemeria Records feat. nomico, shadow-art video by Anira); the operator supplies their own copy and names it with `BAD_APPLE=/path/to/video`.
 
@@ -8,9 +35,9 @@ The video is never downloaded or committed. *Bad Apple!!* is a fan work (origina
 
 | Act | What plays | Needs | On kmscon today |
 |---|---|---|---|
-| 1. stick figures | Bad Apple!! as crude ASCII line art (the silhouettes' outlines traced with `- \| / \` on a 27-row grid at 12 fps), then a Braille pass, 2x4 dots a cell, up to 52 rows at 24 fps | ffmpeg, python3 | plays (Braille is drawn from the font until #76) |
+| 1. stick figures | Bad Apple!! as crude ASCII line art (the silhouettes' outlines traced with `- \| / \` on a 27-row grid at 12 fps), then a Braille pass, 2x4 dots a cell, up to 52 rows at 24 fps | ffmpeg, python3 | plays (Braille is drawn from the font until aaronsb/kmscon#76) |
 | 2. we can do better | black, a dramatic pause, then "we can do better!" slammed in letter by letter in toilet's `mono12` block letters (▀ ▄ █, rainbow), then a half-block plasma fading in behind them, then shadebobs | python3, toilet | plays |
-| 3. aalib | "this has got to beat ascii line art... how about ... AALIB?" typed on black, then libcaca's `img2txt` in 80x25. It asks the terminal for a real 80x25 grid (xterm's `CSI 8 ; 25 ; 80 t`) and plays full screen where the size took effect; elsewhere it plays in a double-lined 80x25 frame. Then it freezes, broken, and a resized terminal is put back to its size | ffmpeg, img2txt, python3 | plays in the frame (kmscon gains `CSI 8 t` with #77) |
+| 3. aalib | "this has got to beat ascii line art... how about ... AALIB?" typed on black, then libcaca's `img2txt` in 80x25. It asks the terminal for a real 80x25 grid (xterm's `CSI 8 ; 25 ; 80 t`) and plays full screen where the size took effect; elsewhere it plays in a double-lined 80x25 frame. Then it freezes, broken, and a resized terminal is put back to its size | ffmpeg, img2txt, python3 | plays in the frame (kmscon gains `CSI 8 t` with aaronsb/kmscon#77) |
 | 4. don't we have libsixel? | "wait a minute... don't we have ... LIBSIXEL?" typed over the frozen frame | python3 | plays |
 | 5. sixel | `mpv --vo=sixel` plays it half the screen's height, centred, then it glitches (red channel only, shifted, a band torn sideways) and halts on its last frame while the sound stutters, its last 0.3 s repeating shorter each time like a skipping buffer; without sixel, a panel of static reading "[no sixel: DA1 lacks attribute 4]" | ffmpeg, mpv, python3 | plays (ADR-103 step 3) |
 | 6. kitty and the cats | a fire wipe burns the screen away, uncovering lines of CJK ideographs scrolling up behind the flames, which fill the screen for two bars once it has burnt out (a stress of the parser, the glyph cache and scrolling, the glyph kit's seeded text) and are then blown away by a wind, then "hold on, we also have kitty. one sec, feeding the cats" and a crowd of colour cats (🐱🐈😺😸🙀🐈‍⬛ ...); then an interlude: six of Noto Emoji's vector cat faces in a row in kitty graphics, rendered by `rsvg-convert` at up to a quarter of the screen's height on the first run and cached, pixel sunglasses dropping onto each from left to right, one a beat, and the row sliding off the left edge (emoji and ⌐■-■ without kitty graphics or rsvg-convert, or when the images cannot be rendered or cached) | python3; rsvg-convert for the interlude in kitty graphics | plays |
@@ -26,10 +53,10 @@ The scroller's list is one variable, `BANNER_FEATURES` at the top of `bad-apple.
 
 ## Preview in kitty, foot or WezTerm
 
-Run it straight from the checkout in a terminal on the desktop, outside make and the VT:
+Run it straight from the checkout in a terminal on the desktop:
 
 ```sh
-BAD_APPLE=/path/to/your/copy fork/showcase/bad-apple.sh
+BAD_APPLE=/path/to/your/copy ./bad-apple.sh
 ```
 
 Press a key to start; q ends it. Add `--audio` for the soundtrack ([Sound](#sound)). What each terminal plays:
@@ -44,51 +71,32 @@ Press a key to start; q ends it. Add `--audio` for the soundtrack ([Sound](#soun
 Act 7 leaves the scroller its rows (`BANNER_ROWS`) and plays in the rows above. Everything sizes itself to the window when each act starts, and the effects, the scroller and act 7's copies follow a resize while they run. To try act 7 alone, with its sound:
 
 ```sh
-BAD_APPLE=/path/to/your/copy fork/showcase/bad-apple.sh --audio --act 7
+BAD_APPLE=/path/to/your/copy ./bad-apple.sh --audio --act 7
 ```
 
 Checked here in kitty 0.49 and `xterm -ti vt340` on a private Xvfb display: kitty played act 7's video above the scroller and showed act 5's placeholder and act 3's frame; xterm played act 5 in sixel. foot and WezTerm are not installed on this machine. On 2026-10-24, kitty 0.49.2 at 1280x800 ran the whole show with `--audio --no-wait`, its sound sent to a PipeWire null sink (`AUDIO_DEVICE=pipewire/kmscon_showcase_check`), each act's start timed from a trace of the script: act 1's outlines played 20.0 s and its Braille pass 10.1 s against the soundtrack's 30 s from 0:00; act 3 8.1 s against 8 s from 0:30 (after the 1.5 s act 3 waits for a resize kitty does not make); act 5 the placeholder for 6 s, silent; act 7 the video above the scroller for 60.4 s from 0:46, then the end card. Act 2 took 18.2 s, act 4 7.9 s and act 6 19.5 s, all silent then. On 2026-10-25, with their music cues, on a 140x40 pty with mpv's sound sent nowhere (`--ao=null`), act 2 took 19.4 s, act 4 9.1 s and act 6 20.9 s, act 6's cats cue starting 10.2 s after its fire cue.
 
-## On a VT: `make showcase`
+## Before the move: `make showcase`
 
-```sh
-make showcase BAD_APPLE=/path/to/your/copy \
-    DEMO_ARGS='--font-name="Monoid Nerd Font Mono" --font-size=30 --mode=7680x2160 --no-use-original-mode'
-```
-
-It renders the video's frame caches as you (so a missing video or tool fails before anything builds), builds and stages the dev build (`make demo`), and hands over to `fork/demo/vt-demo.sh`, which picks a free VT and runs `fork/demo/run-vt.sh` through sudo with the showcase as kmscon's session in place of the paged demo. The VT choice, the refusals, the restore of the stock console and the health check of kmscon's log are theirs, unchanged ([docs/fork/demo.md](../../docs/fork/demo.md)). Switch to the VT it names, press a key to start, and press q (or a key on the end card) to finish.
-
-| Variable | Effect |
-|---|---|
-| `BAD_APPLE=` | the video; required |
-| `FROM=N` | start at act N |
-| `AUDIO=1` | play the soundtrack with mpv, through the user's audio server (`run-vt.sh` passes the user's `/run/user/UID`); the show asks which output on the VT before it starts ([Sound](#sound)) |
-| `AUDIO_DEVICE=` | the output to play through, as `mpv --audio-device=help` names it (`none` for no sound), so nothing is asked; it plays the soundtrack without `AUDIO=1` too, and `AUDIO=0` ignores it |
-| `VT=N`, `DEMO_ARGS='...'` | as for `make vt-demo` |
-
-`VT_DEMO_DRY_RUN=1 make showcase BAD_APPLE=...` builds, stages and prints the `run-vt.sh` command without running it. By hand: `sudo fork/demo/run-vt.sh --showcase=/abs/path [--showcase-from=N] [--showcase-audio[=DEVICE]] [N] [-- kmscon-option...]`.
-
-`run-vt.sh` starts the session with a cleared environment, so the pacing variables below and `SHOWCASE_CACHE` do not reach a VT run from your shell: tune them by editing their defaults at the top of `bad-apple.sh`. `make showcase` renders the caches with the environment cleared too, so they are the ones the VT run reads. `AUDIO=` takes `yes` or `1` for the soundtrack and `no` or `0` for none; left out, the soundtrack plays when `AUDIO_DEVICE` names an output.
-
-To run the show yourself in a login session, where logind gives the session the sound cards while its VT is on screen and no `audio` group is needed, use `make vt-login` ([docs/fork/demo.md](../../docs/fork/demo.md)) and run `BAD_APPLE=/path/to/your/copy fork/showcase/bad-apple.sh --audio` once logged in.
+In kmscon, `make showcase BAD_APPLE=...` (its `fork/showcase.mk`) rendered the frame caches, built and staged kmscon, and ran the show as the session of a free VT through `run-vt.sh --showcase`, in place of the paged demo. kmscon dropped it when the show moved here; [Run it on a kmscon VT](#run-it-on-a-kmscon-vt) replaces it. That session started with a cleared environment and no logind session, which is why the pacing variables below are edited at the top of `bad-apple.sh` for a VT run, and why the [Sound](#sound) section speaks of the `audio` group. In a login session the environment is yours, so they can be set there too.
 
 ## Options
 
 ```sh
-fork/showcase/bad-apple.sh --list                                  # the acts and effects, and what each needs
-fork/showcase/bad-apple.sh --dry-run [--act N | --from N]          # the plan and the tools each act would use
-BAD_APPLE=... fork/showcase/bad-apple.sh --act 3                   # one act
-BAD_APPLE=... fork/showcase/bad-apple.sh --from 5                  # from act 5 on
-fork/showcase/bad-apple.sh --act 7 --banner-only                   # the scroller alone, no video needed
-BAD_APPLE=... fork/showcase/bad-apple.sh --prepare                 # render the frame caches only
-fork/showcase/bad-apple.sh --fx plasma                             # one effect alone, with its frame rate
+./bad-apple.sh --list                                  # the acts and effects, and what each needs
+./bad-apple.sh --dry-run [--act N | --from N]          # the plan and the tools each act would use
+BAD_APPLE=... ./bad-apple.sh --act 3                   # one act
+BAD_APPLE=... ./bad-apple.sh --from 5                  # from act 5 on
+./bad-apple.sh --act 7 --banner-only                   # the scroller alone, no video needed
+BAD_APPLE=... ./bad-apple.sh --prepare                 # render the frame caches only
+./bad-apple.sh --fx plasma                             # one effect alone, with its frame rate
 ```
 
-`--audio` plays the soundtrack ([Sound](#sound)), `--no-wait` starts without waiting for a key. q or Ctrl-C ends the show at any point: the players stop, and the cursor, the main screen, the colours and the terminal's mode come back. mpv's video outputs turn on mouse tracking (`CSI ?1003 h`) and turn it off only when they exit cleanly, so a player stopped by q left a terminal reporting every mouse movement to the shell (#88); the show now turns off every mouse mode and encoding, focus events and bracketed paste on its way out. While mpv plays, a mouse report arriving as keys (X10 or SGR) is dropped once it is whole, even when it arrives split across reads, so a byte of its coordinates is not taken for q; any other byte, a q right after Esc included, is a key. When mpv stops, however it stops, the show turns tracking off again and drops the reports already sent. Acts 2, 4 and 6, and act 7 with `--banner-only`, run without the video.
+`--audio` plays the soundtrack ([Sound](#sound)), `--no-wait` starts without waiting for a key. q or Ctrl-C ends the show at any point: the players stop, and the cursor, the main screen, the colours and the terminal's mode come back. mpv's video outputs turn on mouse tracking (`CSI ?1003 h`) and turn it off only when they exit cleanly, so a player stopped by q left a terminal reporting every mouse movement to the shell (aaronsb/kmscon#88); the show now turns off every mouse mode and encoding, focus events and bracketed paste on its way out. While mpv plays, a mouse report arriving as keys (X10 or SGR) is dropped once it is whole, even when it arrives split across reads, so a byte of its coordinates is not taken for q; any other byte, a q right after Esc included, is a key. When mpv stops, however it stops, the show turns tracking off again and drops the reports already sent. Acts 2, 4 and 6, and act 7 with `--banner-only`, run without the video.
 
 ## Sound
 
-With `--audio`, before the show takes the screen, it asks where the soundtrack plays, through `fork/demo/pick-audio.sh`, which other demos can call too. It lists the outputs `mpv --audio-device=help` finds: the sound server's (PipeWire's, else PulseAudio's), the server's default first, or, with no server, each ALSA card's default and HDMI devices, and `0` for no sound. A server with no sink but its dummy (`auto_null`) counts as none. A number plays a one-second 660 Hz tone through that output, and so does a device name typed in its place (any word of the form mpv's device names take, as `mpv --audio-device=help` lists them; any other answer asks again); `y` keeps it, `t` plays the tone again, anything else asks again. `AUDIO_DEVICE=NAME` (an mpv device name, or `none`) answers the question in advance; with `--no-wait` nothing is asked and the sound plays through mpv's default output, so `AUDIO_DEVICE` is what names an output in an unattended run. Nothing is asked when no act in the run plays sound (act 7 with `--banner-only` alone). The soundtrack, act 5's clip, act 7's video and the music cues then play through that output.
+With `--audio`, before the show takes the screen, it asks where the soundtrack plays, through `pick-audio.sh`, a copy of kmscon's `fork/demo/pick-audio.sh`, which kmscon's demos call too. It lists the outputs `mpv --audio-device=help` finds: the sound server's (PipeWire's, else PulseAudio's), the server's default first, or, with no server, each ALSA card's default and HDMI devices, and `0` for no sound. A server with no sink but its dummy (`auto_null`) counts as none. A number plays a one-second 660 Hz tone through that output, and so does a device name typed in its place (any word of the form mpv's device names take, as `mpv --audio-device=help` lists them; any other answer asks again); `y` keeps it, `t` plays the tone again, anything else asks again. `AUDIO_DEVICE=NAME` (an mpv device name, or `none`) answers the question in advance; with `--no-wait` nothing is asked and the sound plays through mpv's default output, so `AUDIO_DEVICE` is what names an output in an unattended run. Nothing is asked when no act in the run plays sound (act 7 with `--banner-only` alone). The soundtrack, act 5's clip, act 7's video and the music cues then play through that output.
 
 ### Music
 
@@ -109,14 +117,14 @@ The acts' times fall on their cue's beats: act 2's pause is 19 sixteenths (`ACT2
 To change a cue, edit its `.js` (it plays on strudel.cc once the drums are loaded there: run `samples(...)` with the map and base `render.mjs` builds from its `DRUMS`), then render it again:
 
 ```sh
-cd fork/showcase/music && npm install && node render.mjs act2-better.js   # or no file: every cue
+cd music && npm install && node render.mjs act2-better.js   # or no file: every cue
 ```
 
 `render.mjs` runs Strudel's own offline renderer (`renderPatternAudio` from `@strudel/web`) in headless Chromium (`/usr/bin/chromium`, else `CHROMIUM=`), with the drums of a Roland TR-8's 909 voices, recorded one hit at a time by MckAudio and dedicated to the public domain under CC0 1.0 ([MckAudio/MckSamplePacks](https://github.com/MckAudio/MckSamplePacks), `TR8/`, its top-level `LICENSE`), fetched from `https://raw.githubusercontent.com/MckAudio/MckSamplePacks/5db40e8fe26785c256845a5bb38921b2654a887f/TR8/`. A cue plays them as the bank `tr8`; `render.mjs` cuts each recording 30 ms after it falls to its noise floor and sets each sound's level to that of the 909 sample it replaced. The `.ogg` files carry them mixed into each cue. Each cue's header names its tempo, bars, tail and whether it loops (a loop is rendered twice and the second pass kept, so it starts with its own reverb and loops without a seam); ffmpeg brings it to -8 LUFS (`LUFS=`; the soundtrack is about -6.7) under a limiter 2 dB down and encodes Opus at 160 kb/s. Node, npm and Chromium are needed only to render; the show plays the `.ogg` files.
 
-Every third-party asset the showcase ships is under Creative Commons or another known licence: the drums in the `.ogg` files under CC0 1.0 (above) and the cat faces under the Apache License 2.0 ([Files](#files)). The music, the sunglasses and the code are the fork's own; Strudel and Playwright are used only to render and are not shipped, and the video is the user's own copy (`BAD_APPLE`).
+Every third-party asset the showcase ships is under Creative Commons or another known licence: the drums in the `.ogg` files under CC0 1.0 (above) and the cat faces under the Apache License 2.0 ([Files](#files)). The music is the show's own, under CC BY 4.0 ([music/LICENSE](music/LICENSE)), and the sunglasses and the code are under MIT ([LICENSE](LICENSE)); Strudel and Playwright are used only to render and are not shipped, and the video is the user's own copy (`BAD_APPLE`).
 
-On the VT, the wired and USB outputs need the user in the `audio` group: the operator's choice, 2026-10-24 (#171). `run-vt.sh` starts the show without a logind session, so while its VT is on screen logind grants nobody the sound cards (`/dev/snd`) through their ACLs, and PipeWire, which opens them for the user, drops them. With the group, PipeWire and mpv open the cards whatever VT is on screen. The trade-off: every process the user runs gets raw ALSA on every VT, outside logind's seat model. Join with `sudo usermod -aG audio $USER`, then log out of every session (or reboot), so that the user's PipeWire starts again with the group. Until then the show says so above its list and offers what still plays, a Bluetooth output (WirePlumber ships with Bluetooth seat monitoring off) or no sound. When it finds no output at all, one line says why: no sound card; the user in `/etc/group`'s audio group, with the cards out of reach because this login started before they joined it, or with a PipeWire that did (#171's case: log out of every session, or reboot); or the cards out of reach and the user not in the group. A device name can still be typed there, and Enter is no sound. On the desktop the user's session holds the cards, and no group is needed; so does a login on a VT, `make vt-login` ([docs/fork/demo.md](../../docs/fork/demo.md)).
+On a VT session with no logind session, the wired and USB outputs need the user in the `audio` group: the operator's choice, 2026-10-24 (aaronsb/kmscon#171). kmscon's `run-vt.sh` started the show without a logind session (`make showcase`, above), so while its VT is on screen logind grants nobody the sound cards (`/dev/snd`) through their ACLs, and PipeWire, which opens them for the user, drops them. With the group, PipeWire and mpv open the cards whatever VT is on screen. The trade-off: every process the user runs gets raw ALSA on every VT, outside logind's seat model. Join with `sudo usermod -aG audio $USER`, then log out of every session (or reboot), so that the user's PipeWire starts again with the group. Until then the show says so above its list and offers what still plays, a Bluetooth output (WirePlumber ships with Bluetooth seat monitoring off) or no sound. When it finds no output at all, one line says why: no sound card; the user in `/etc/group`'s audio group, with the cards out of reach because this login started before they joined it, or with a PipeWire that did (aaronsb/kmscon#171's case: log out of every session, or reboot); or the cards out of reach and the user not in the group. A device name can still be typed there, and Enter is no sound. On the desktop the user's session holds the cards, and no group is needed; so does a login on a VT, kmscon's `make vt-login` ([docs/fork/demo.md](https://github.com/aaronsb/kmscon/blob/main/docs/fork/demo.md)).
 
 ## Act 7's player
 
@@ -133,7 +141,7 @@ The transports (`KITTY_TRANSPORT`):
 | `png` (default) | `f=100`, an 8-bit greyscale PNG made by the player: the spec has no grey raw format (`f` is 24, 32 or 100), and PNG is its compact form | about 17,800 |
 | `shm` | `f=24` RGB in a POSIX shared memory object (`t=s`), a new name starting with `/` each frame, which the terminal reads and unlinks; while the frames it has yet to read hold 64 MB (five at 8K, at least two), the player drops frames rather than send more | about 260 |
 
-`shm` is asked for first with an `a=q` of one pixel and falls back to `png` when the terminal refuses it: kmscon reads no shared memory for a session outside logind, which is how `run-vt.sh` starts the show ([docs/image-helper.md](../../docs/image-helper.md)). On kmscon, `zlib`, `png` and `shm` go through its image helper, with the pty paused for each frame; `raw` stays in libtsm.
+`shm` is asked for first with an `a=q` of one pixel and falls back to `png` when the terminal refuses it: kmscon reads no shared memory for a session outside logind, which is how its `run-vt.sh` started the show ([docs/image-helper.md](https://github.com/aaronsb/kmscon/blob/main/docs/image-helper.md)). On kmscon, `zlib`, `png` and `shm` go through its image helper, with the pty paused for each frame; `raw` stays in libtsm.
 
 The frames follow the soundtrack: with `--audio` the player reads mpv's position (`time-pos`) over mpv's IPC socket four times a second and shows the frame for that moment, dropping the frames it is late for. The socket sits in `XDG_RUNTIME_DIR` (else `/tmp`), so its path stays within the 108 bytes a socket's path may hold. Until mpv answers, and for the rest of the act if it has not answered within 3 s, the player follows a wall clock from the moment the soundtrack started, and says so once the screen is back. Without sound it runs on its own clock. q ends it even when the terminal has fallen behind; SIGTERM and SIGHUP end it as Ctrl-C does, its images deleted and its shared memory unlinked.
 
@@ -190,7 +198,7 @@ Half blocks (▀ with a 24-bit foreground and background) make each cell two pix
 | `braille` | behind the end card | Braille; a turning torus over an oscilloscope trace, lines that still read if a font draws the dots off their grid |
 | `banner` | act 7's scroller | half blocks and emoji; the sine scroller over copper bars |
 
-They double as a text-throughput benchmark for the parser, damage tracking (#67) and bbulk: `--fx NAME` runs one alone for `FX_SECONDS` (10) and prints its frames per second and bytes per frame. Measured in tmux at 384x54 on this machine, 4 s each:
+They double as a text-throughput benchmark for the parser, damage tracking (aaronsb/kmscon#67) and bbulk: `--fx NAME` runs one alone for `FX_SECONDS` (10) and prints its frames per second and bytes per frame. Measured in tmux at 384x54 on this machine, 4 s each:
 
 | Effect | Frames a second | Bytes a frame | MB/s |
 |---|---|---|---|
@@ -222,7 +230,7 @@ The acts run these programs; `--dry-run` says which are missing and the Arch pac
 | rsvg-convert | librsvg | act 6's interlude in kitty graphics: renders the cat faces and sunglasses (`cats/*.svg`) at the screen's size into the cache | present |
 | node, npm, chromium | nodejs, npm, chromium | rendering the music cues again (`music/render.mjs`), not the show | present (2026-10-25: node 26.12, chromium) |
 
-The dev image (`fork/dev.Dockerfile`) carries none of the media tools and needs none: the show runs on the host, and `make test` runs only `--list`, `--dry-run`, the refusals, the pure helpers, act 4 on a pty and act 7's player with stand-ins for ffmpeg and ffprobe (python3 alone), quit with q to check the modes it turns off. Pinning them there would mean adding `ffmpeg mpv libcaca toilet` to its `pacman -S` line.
+The tests need none of the media tools: the show runs on the host, and `tests/showcase.py` runs only `--list`, `--dry-run`, the refusals, the pure helpers, act 4 on a pty and act 7's player with stand-ins for ffmpeg and ffprobe (python3 alone), quit with q to check the modes it turns off. CI installs them anyway (`.github/workflows/test.yml`), so `--list` and `--dry-run` see a host with every tool.
 
 ## Files
 
@@ -239,8 +247,10 @@ The dev image (`fork/dev.Dockerfile`) carries none of the media tools and needs 
 | `shades.py` | act 6's interlude, the cats in sunglasses: the row's layout, the drops and the slide in kitty graphics, and its emoji fallback |
 | `cats/` | the interlude's images: six Noto Emoji cat faces (`emoji_u*.svg`, from googlefonts/noto-emoji `2D/svg`, under the Apache License 2.0 that `2D/svg/LICENSE` names, its text in `LICENSE-noto-emoji`; the OFL in noto-emoji's top-level `LICENSE` covers its fonts) and pixel sunglasses (`sunglasses.svg`, drawn new for the showcase by a Claude session at the operator's request) |
 | `music/` | the music cues ([Music](#music)): each cue's Strudel source (`.js`) and its rendering (`.ogg`), and `render.mjs`, which renders them |
-| `../showcase.mk` | `make showcase` |
+| `pick-audio.sh` | the sound output picker ([Sound](#sound)), copied from kmscon's `fork/demo/pick-audio.sh` at commit `cca86bed` |
+| `ideographs.py` | the CJK stream's ideograph pool, `ideographs(rng)` copied from kmscon's `fork/demo/glyph-text.py` at commit `cca86bed` |
+| `tests/showcase.py` | the tests (below) |
 
 The frame caches go to `~/.cache/kmscon-showcase/<video id>/` (`SHOWCASE_CACHE` moves them), keyed by the video's path, size and time and by each act's settings. A cache made for one grid size is not reused for another: act 1's grids and act 3's framed region shrink in a smaller terminal and render again there.
 
-`tests/showcase/showcase.py`, part of `make test`, checks the act and effect tables, the plan, the refusals and the pure helpers (the painter's diff, Braille dots, the outline table, img2txt's colours, act 5's picture size, the XTWINOPS answers) without a video or any media tool, and quits act 4 on a pty to check that every mouse mode, focus events and bracketed paste are turned off. It checks act 7's player too: the copies' layout and moves, and its output replayed on a model of the spec's image store, from the player alone in every transport and from `fx.py kitty` on a pty with ffmpeg and ffprobe stood in for: q=2 on every command and C=1 on every placement, chunks within the spec, placement ids 1 to 3 at z 3 to 1, c and r as laid out, every frame decoding to the pixels sent (base64, zlib, the PNG's chunks and rows, shared memory), each frame's copies placed before the last frame's are deleted, never more than two images stored, and none left at the end. It also checks the soundtrack's clock against a stand-in mpv and its fallback, the shared memory probe's two answers and the cleanup of unread objects, and that q ends the player while the terminal is behind. Act 6's interlude runs on a pty too, `fx.py shades --kitty` with rsvg-convert stood in for: its seven images sent, each placement past the left edge deleted once, every image deleted at the end and on SIGTERM and SIGHUP, and emoji when a render fails or the cache cannot be made, with no `.part` left behind.
+`tests/showcase.py`, which CI runs on every push and pull request (`python3 tests/showcase.py --root .`), checks the act and effect tables, the plan, the refusals and the pure helpers (the painter's diff, Braille dots, the outline table, img2txt's colours, act 5's picture size, the XTWINOPS answers) without a video or any media tool, and quits act 4 on a pty to check that every mouse mode, focus events and bracketed paste are turned off. It checks act 7's player too: the copies' layout and moves, and its output replayed on a model of the spec's image store, from the player alone in every transport and from `fx.py kitty` on a pty with ffmpeg and ffprobe stood in for: q=2 on every command and C=1 on every placement, chunks within the spec, placement ids 1 to 3 at z 3 to 1, c and r as laid out, every frame decoding to the pixels sent (base64, zlib, the PNG's chunks and rows, shared memory), each frame's copies placed before the last frame's are deleted, never more than two images stored, and none left at the end. It also checks the soundtrack's clock against a stand-in mpv and its fallback, the shared memory probe's two answers and the cleanup of unread objects, and that q ends the player while the terminal is behind. Act 6's interlude runs on a pty too, `fx.py shades --kitty` with rsvg-convert stood in for: its seven images sent, each placement past the left edge deleted once, every image deleted at the end and on SIGTERM and SIGHUP, and emoji when a render fails or the cache cannot be made, with no `.part` left behind.
