@@ -8,6 +8,7 @@ jobs:
   showcase:
     name: tests/showcase.py
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v4
 
@@ -15,11 +16,15 @@ jobs:
     # run them, and need none of the media tools. They are installed so that
     # --list and --dry-run check the show on a host that has every tool, as
     # the operator's does. de_DE.UTF-8 lets the comma-decimal locale check
-    # run instead of skipping.
+    # run instead of skipping. The first run sat in apt-get for over 15
+    # minutes, at what was most likely a debconf question with nobody to
+    # answer it; the noninteractive frontend takes the defaults, and the
+    # timeout ends the step if it still hangs.
     - name: Install the show's tools
+      timeout-minutes: 10
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends \
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
           bash python3 ffmpeg mpv caca-utils toilet figlet librsvg2-bin locales
         sudo locale-gen de_DE.UTF-8
 
