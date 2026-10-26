@@ -1,0 +1,36 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  showcase:
+    name: tests/showcase.py
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    # The tests stand in for ffmpeg, ffprobe, mpv and rsvg-convert where they
+    # run them, and need none of the media tools. They are installed so that
+    # --list and --dry-run check the show on a host that has every tool, as
+    # the operator's does. de_DE.UTF-8 lets the comma-decimal locale check
+    # run instead of skipping.
+    - name: Install the show's tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          bash python3 ffmpeg mpv caca-utils toilet figlet librsvg2-bin locales
+        sudo locale-gen de_DE.UTF-8
+
+    - name: Tools found
+      run: ./bad-apple.sh --dry-run
+
+    # A check that cannot run here prints a line starting "skip"; each one is
+    # raised as a warning on the run, so a skip never reads as a pass.
+    - name: Test
+      run: |
+        set -o pipefail
+        python3 -B tests/showcase.py --root . | tee showcase.log
+        grep '^skip' showcase.log | sed 's/^skip */::warning title=skipped check::/' || true
+        echo "$(grep -c '^ok' showcase.log) checks passed, $(grep -c '^skip' showcase.log) skipped" >> "$GITHUB_STEP_SUMMARY"
